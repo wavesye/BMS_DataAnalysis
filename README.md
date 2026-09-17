@@ -2,19 +2,53 @@
 
 一车一个 CSV，原始文件只读。分布分析和模型结果输出为 CSV/JSON，可接入已有作图程序。本目录没有真实车辆数据，验证使用合成数据。
 
-## 运行
+## 怎么运行
 
-需要 Python 3.10+。项目已有用于验证的 `.venv`；其他机器可安装依赖：
+以下命令都在本项目目录执行。首次使用只需按顺序完成前三步；原始 CSV 不会被修改。
+
+1. 准备 Python 环境。项目中已有 `.venv` 时跳过安装；在新电脑上执行：
 
 ```bash
-python -m pip install -r requirements.txt
-python prepare_data.py /path/to/raw_csv outputs/cache --config config.example.json
-python analyze_conditions.py outputs/cache outputs/conditions
-python analyze_software.py outputs/cache outputs/software --target 3.03.07
-python analyze_glue.py outputs/cache outputs/glue --interventions /path/to/glue_dates.csv
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
-每次运行使用新的或空的输出目录，避免混入旧结果。先准备一次缓存，三个分析入口复用缓存。修改闪充定义、字段映射或窗口后，重新准备缓存。仅改模型时不需要重读原始 CSV。
+2. 检查 [config.example.json](config.example.json)。默认假定充电允许字段名为 `chargeAllow`、报警编码为 `0=正常` 和 `1=报警`。如果实际字段名或编码不同，复制该文件后修改，例如保存为 `config.json`。
+
+3. 预处理原始数据。将 `/path/to/raw_csv` 替换为存放 VIN CSV 的目录；每个 CSV 应只包含一个 VIN。
+
+```bash
+.venv/bin/python prepare_data.py /path/to/raw_csv outputs/cache --config config.example.json
+```
+
+预处理完成后，先查看这两个文件，确认数据质量和闪充识别是否合理：
+
+```bash
+open outputs/cache/quality.csv
+open outputs/cache/charging_events.csv
+```
+
+4. 执行工况关联分析：
+
+```bash
+.venv/bin/python analyze_conditions.py outputs/cache outputs/conditions
+```
+
+重点先看 `outputs/conditions/model_diagnostics.json` 是否显示 `status: "ok"`，再查看 `model_coefficients.csv`、`stratified_rates.csv` 和 `rates_by_vin.csv`。
+
+5. 软件版本前后分析：
+
+```bash
+.venv/bin/python analyze_software.py outputs/cache outputs/software --target 3.03.07
+```
+
+6. 打胶方案前后分析。先准备一个实施清单 CSV，再运行：
+
+```bash
+.venv/bin/python analyze_glue.py outputs/cache outputs/glue --interventions /path/to/glue_dates.csv
+```
+
+每次运行请使用新的或空的输出目录，避免混入旧结果。预处理生成的 `outputs/cache` 可被三个分析脚本复用；只有修改闪充定义、字段映射或窗口大小时，才需要重新预处理原始 CSV。仅修改模型时不需要重读原始数据。
 
 打胶实施清单格式，每 VIN 一行：
 
