@@ -1,0 +1,20 @@
+{
+  "chunksize": 200000,
+  "window_seconds": 300,
+  "max_gap_seconds": 5,
+  "start_frames": 10,
+  "end_frames": 10,
+  "start_current": -2,
+  "peak_current": -600,
+  "end_current": 0,
+  "min_soc_gain": 10,
+  "recent_flash_hours": 24,
+  "charge_allowed_values": [1],
+  "alarm_normal_values": [0],
+  "alarm_active_values": [1],
+  "columns": {
+    "allow": "chargeAllow",
+    "soc": "SOC",
+    "speed": "speed"
+  }
+}

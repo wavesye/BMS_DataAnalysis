@@ -1,0 +1,5 @@
+numpy>=1.26
+pandas>=2.2
+pyarrow>=15
+scipy>=1.11
+statsmodels>=0.14.4
